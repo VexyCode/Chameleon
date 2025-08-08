@@ -1,0 +1,101 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "NexiLang",
+  "scopeName": "source.nexilang",
+  "patterns": [
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#constants" },
+    { "include": "#functions" },
+    { "include": "#strings" },
+    { "include": "#variables" },
+    { "include": "#numbers" },
+    { "include": "#comments" }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.nexilang",
+          "match": "\\b(if|then|else|end|while|for|return|break|continue|define|run)\\b"
+        },
+        {
+          "name": "keyword.declaration.nexilang",
+          "match": "\\b(var|const)\\b"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.nexilang",
+          "match": "\\b[a-zA-Z_]\\w*(?!\\s*\\()"
+        },
+        {
+          "name": "variable.member.nexilang",
+          "match": "\\b(?:this|self|[a-zA-Z_]\\w*)\\.[a-zA-Z_]\\w*"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.nexilang",
+          "match": "\\b(int|float|string|bool)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.nexilang",
+          "match": "\\b(true|false|yes|no)\\b"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "entity.name.function.nexilang",
+          "match": "\\b[a-zA-Z_]\\w*(?=\\()"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.nexilang",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.nexilang",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.nexilang",
+          "match": "\\b\\d+(\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.nexilang",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.nexilang",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    }
+  }
+}

@@ -1,7 +1,6 @@
-name "chamd"
+name "cham"
 description "The NexiLang compiler written in the D programming language"
 authors "Vexor"
 copyright "Copyright © 2025, Vexor"
 license "proprietary"
-dependency "llvm-d" version="~>3.0.0"
 lflags "-incremental:no"
