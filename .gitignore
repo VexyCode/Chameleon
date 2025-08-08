@@ -1,0 +1,10 @@
+# IDE configs
+.idea/
+.vscode/
+
+# Build outputs
+chamd.exe
+chamd.pdb
+
+# Dub build artifacts
+.dub/
