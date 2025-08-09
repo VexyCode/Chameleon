@@ -94,17 +94,17 @@ private:
         else if (cur == '"') 
             ret = readString();
 
-        else if (cur.isSmallOp())
-            ret = readOp();
-
         else if (cur.isNumber())
             ret = readNumber();
 
         else if (cur.isPunct())
             ret = readPunct();
 
-        else if (isOp(cur.to!string()))
-            ret = Token(line, col, cur.to!string(), TT.Op);
+        else if (isOp(cur.to!string())) {
+            string opChar = cur.to!string();
+            advance();
+            ret = Token(line, col - 1, opChar, TT.Op);
+        }
 
         else ret = Token(line, col, cur.to!string(), TT.Unk); // fallback unknown
 
@@ -192,20 +192,18 @@ private:
     Token readOp() {
         int startCol = col;
         char first = cur;
-        advance();
+        advance(); // consume first char
 
-        // Lookahead only if not at EOF
         if (!isEnd()) {
             string op = first.to!string ~ cur.to!string;
             if (op.isOp()) {
-                advance();
+                advance(); // consume second char of op
                 return Token(line, startCol, op, TT.Op);
             }
         }
-
-        // fallback: single-char op
         return Token(line, startCol, first.to!string, TT.Op);
     }
+
 
 
     /// Skips whitespace characters
