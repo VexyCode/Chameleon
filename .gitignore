@@ -4,6 +4,7 @@
 
 # Build outputs
 chamd.exe
+cham.exe
 chamd.pdb
 
 # Dub build artifacts
