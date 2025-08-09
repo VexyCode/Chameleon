@@ -43,7 +43,7 @@ class Scope {
             value = cast(Node) value.eval(this);
         }
 
-        SymbolInfo info = SymbolInfo(value, isConst, type);
+        SymbolInfo info = SymbolInfo(cast(Node) value.eval(this), isConst, type);
 
         // Enforce type correctness on symbol value
         typeCheck(name, info);
@@ -127,7 +127,7 @@ class Scope {
     /// Checks that the node’s type matches the expected type for the symbol
     void typeCheck(string name, SymbolInfo info) {
         TypeInfo expected = typenames[info.type];
-        if (typeid(info.node) !is expected)
+        if (typeid(info.node.eval(this)) !is expected)
             throwChamError(
                 format("Type mismatch. Expected %s, got %s for symbol `%s`.", 
                     expected.toString(),
