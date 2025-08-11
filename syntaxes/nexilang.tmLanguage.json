@@ -41,7 +41,7 @@
       "patterns": [
         {
           "name": "storage.type.nexilang",
-          "match": "\\b(int|float|string|bool)\\b"
+          "match": "\\b(int|float|string|bool|void|nothing)\\b"
         }
       ]
     },

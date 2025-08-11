@@ -1,9 +1,9 @@
-var string name = input()
-
-if (name == "Tyler") run
-    log("Hello, Tyler")
-end else run
-    log("Hello, ")
-    log(name)
-    log("!\n")
+define print(string text) nothing run
+    log(text)
+    log("\n")
 end
+
+print("hello")
+print("15")
+log("hello")
+log("15")

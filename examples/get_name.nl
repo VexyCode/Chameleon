@@ -1,0 +1,5 @@
+log("Please enter your name here > ")
+var string name = input()
+log("\nYour name is: \"")
+log(name)
+log(". \n")

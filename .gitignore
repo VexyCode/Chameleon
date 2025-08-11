@@ -6,6 +6,7 @@
 chamd.exe
 cham.exe
 chamd.pdb
+cham.pdb
 
 # Dub build artifacts
 .dub/

@@ -11,7 +11,8 @@ import cham.parsing.nodes.literals.bool_literal : BoolLiteral;
 import cham.parsing.nodes.literals.string_literal : StringLiteral;
 import cham.variables_and_consts.typenames : TypeName, fromString;
 import cham.parsing.nodes.statements.if_statement : IfStmt;
-import cham.parsing.nodes.statements.function_call_statement : FunctionCall;
+import cham.parsing.nodes.statements.function_call_statement : FuncCall;
+import cham.parsing.nodes.statements.function_def : FuncDef;
 
 // Const / Var declaration & lookup
 import cham.parsing.nodes.constants.decl_const : DeclConst;
@@ -21,12 +22,13 @@ import cham.parsing.nodes.variables.reassign_var : ReassignVar;
 
 // Misc utils
 import lexing.token.token_type : TT;
-import cham.scopes.scopes : Scope;
+import cham.scopes.scopes : Scope, ParamInfo, FunctionInfo;
 import cham.exceptions.cham_error : ChamError;
 import std.conv : to, ConvException;
 import std.format : format;
 import std.stdio;
 import std.string : splitLines;
+import std.typecons : Nullable;
 
 class Parser {
     // === Parser State ===
@@ -70,16 +72,69 @@ class Parser {
             throwChamError("Unexpected end of input", cur);
         }
 
-        // Variable / const declarations
         if (cur.type == TT.Keyword && cur.lexeme == "const") return parseConstDecl();
         else if (cur.type == TT.Keyword && cur.lexeme == "var") return parseVarDecl();
         else if (cur.type == TT.Keyword && cur.lexeme == "if") return parseIfElse();
         else if (cur.type == TT.Id && peek().type == TT.LParan) return parseFuncCall(); 
+        else if (cur.type == TT.Keyword && cur.lexeme == "define") return parseFuncDef();
         else if (cur.type == TT.Id && peek().type != TT.TypeName && peek(2).type == TT.Op && peek(2).lexeme == "=")
-            return parseVarReDef();
+                    return parseVarReDef();
 
         // Fallback: arithmetic expression
         else return parseComparison();
+    }
+
+    Node parseFuncDef() {
+        expect(TT.Keyword, "define");
+        advance(); // skip the `define` kw
+        expect(TT.Id); 
+        string fnName = cur.lexeme;
+        advance(); // skip the fn name now that we've contained it
+        expect(TT.LParan);
+        advance();
+        ParamInfo[] params = parseParams();
+        string ret = cur.lexeme;
+        Nullable!TypeName retType;
+        bool returns = true;
+        if (ret == "nothing") {
+            retType = Nullable!TypeName.init;
+            returns = false;
+        } else {
+            retType = fromString(ret, new IntLiteral(0, cur), mainScope.srcLines);
+        }
+        advance();
+
+        Node[] body = parseBlock();
+
+        return new FuncDef(fnName, body, params, retType, returns, mainScope, cur);
+    }
+
+    ParamInfo[] parseParams() {
+        ParamInfo[] params;
+
+        if (cur.type != TT.RParan) {
+            do {
+                if (params.length != 0) {
+                    expect(TT.Comma);
+                    advance(); // skip the comma
+                }
+                expect(TT.TypeName);
+                TypeName type = fromString(cur.lexeme, new IntLiteral(0, cur), mainScope.srcLines);
+                advance(); // advance past the typename
+
+                expect(TT.Id);
+                Token nameToken = cur;
+                string name = cur.lexeme;
+                advance(); // advance past the name;
+
+                params ~= ParamInfo(name, type, nameToken); 
+            } while (cur.type == TT.Comma);
+        }
+
+        expect(TT.RParan);
+        advance();
+
+        return params;
     }
 
     Node parseFuncCall() {
@@ -99,7 +154,7 @@ class Parser {
         }
 
         expect(TT.RParan); advance();
-        return new FunctionCall(name, args, cur);
+        return new FuncCall(name, args, cur);
     }
 
     Node parseIfElse() {
