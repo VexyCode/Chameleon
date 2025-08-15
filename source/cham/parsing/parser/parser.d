@@ -13,6 +13,7 @@ import cham.variables_and_consts.typenames : TypeName, fromString;
 import cham.parsing.nodes.statements.if_statement : IfStmt;
 import cham.parsing.nodes.statements.function_call_statement : FuncCall;
 import cham.parsing.nodes.statements.function_def : FuncDef;
+import cham.parsing.nodes.statements.return_statement : ReturnStmt;
 
 // Const / Var declaration & lookup
 import cham.parsing.nodes.constants.decl_const : DeclConst;
@@ -77,6 +78,7 @@ class Parser {
         else if (cur.type == TT.Keyword && cur.lexeme == "if") return parseIfElse();
         else if (cur.type == TT.Id && peek().type == TT.LParan) return parseFuncCall(); 
         else if (cur.type == TT.Keyword && cur.lexeme == "define") return parseFuncDef();
+        else if (cur.type == TT.Keyword && cur.lexeme == "return") return parseReturnStmt();
         else if (cur.type == TT.Id && peek().type != TT.TypeName && peek(2).type == TT.Op && peek(2).lexeme == "=")
                     return parseVarReDef();
 
@@ -135,6 +137,14 @@ class Parser {
         advance();
 
         return params;
+    }
+
+    Node parseReturnStmt() {
+        expect(TT.Keyword, "return");
+        advance();
+
+        Node value = parseExpr();
+        return new ReturnStmt(value, cur);
     }
 
     Node parseFuncCall() {

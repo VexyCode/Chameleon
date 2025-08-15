@@ -1,3 +1,4 @@
+![Red badge](https://img.shields.io/badge/Depracated-BROKEN-red)
 
 # Chameleon  ![ChamLogo](./logo.svg)
 ### An interpreter for the NexiLang programming language, written in [D](https://dlang.org).
@@ -30,6 +31,9 @@ dub build --build=release
 ```bash
 ./cham /path/to/your/file.nl
 ```
+
+### Or you can download the pre-built binaries for the newest stable version, if it exists, from [the release page]()
+
 > _Note: Currently, directory imports aren’t supported. When modules/imports land, this will change — see the roadmap below._
 
 ---

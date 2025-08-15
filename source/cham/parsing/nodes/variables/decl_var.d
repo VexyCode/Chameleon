@@ -12,7 +12,6 @@ class DeclVar : Node {
     public string name;     // Variable name (identifier)
     public TypeName type;   // Variable type (int, float, etc.)
     Scope _scope;           // Scope in which this variable is declared (used during eval)
-    public string evalType = "decvar";
 
     /// Constructs a DeclVar node with the initial value, name, type, scope, and token info
     this(Node expr, string name, TypeName type, Scope _scope, Token token) {

@@ -1,9 +1,11 @@
-define print(string text) nothing run
-    log(text)
-    log("\n")
+define isBig(int nr) nothing run
+    if (nr > 10) run   
+        return yes
+    end else run
+        return no
+    end
 end
 
-print("hello")
-print("15")
-log("hello")
-log("15")
+log(isBig(4))
+log("\n")
+log(isBig(15))

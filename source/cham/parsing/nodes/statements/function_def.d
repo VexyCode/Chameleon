@@ -6,14 +6,15 @@ import cham.exceptions.cham_error : throwChamError;
 import cham.parsing.nodes.literals.string_literal : StringLiteral;
 import std.typecons : Nullable;
 import cham.scopes.scopes : Scope, FunctionInfo, ParamInfo, SymbolInfo;
-import cham.variables_and_consts.typenames : TypeName;
+import cham.variables_and_consts.typenames : TypeName, toSting;
+import cham.parsing.nodes.statements.if_statement : indent;
 import std.format : format;
 import std.conv : to;
 import std.stdio : writeln;
 import std.algorithm.iteration : map; 
-import std.array : array, join, replace;       
+import std.array;       
 import std.variant;
-
+import std.algorithm;
 
 class FuncDef : Node {
     string name;
@@ -53,6 +54,28 @@ class FuncDef : Node {
     }
 
     override string toString() const {
-        return format("[FunctionDef: %s]", name);
+        string p = "(";
+        int i;
+        int len = cast(int)params.length;
+
+        string bdy = body
+            .map!(n => indent(n.toString()))
+            .array
+            .join("\n");
+
+        foreach (ParamInfo param; params)
+        {
+            p ~= param.name;
+            p ~= i != (len - 1) ? ", " : ")";
+            i++;
+        }
+        return format(
+            "[FunctionDef: %s, params: %s returns?: %s, return type: %s, \nbody: \n %s]", 
+            name, 
+            p, 
+            returns, 
+            retType.isNull() ? "nothing" : toSting(retType.get(), cast(Node) this, cast(string[]) this._scope.srcLines),
+            bdy
+        );
     }
 }

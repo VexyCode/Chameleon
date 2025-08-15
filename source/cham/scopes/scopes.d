@@ -21,13 +21,13 @@ import std.typecons : Nullable;
 /// Holds info about a symbol stored in a scope (variable or constant)
 struct SymbolInfo
 {
-    Node node; // The AST node representing the value/expression of the symbol
+    Object node; // The AST node representing the value/expression of the symbol
     bool isConst; // True if symbol is a constant, false if mutable variable
     TypeName type; // Symbol type (int, float, etc.)
 }
 
 /// Holds info about a function's parameter
-struct ParamInfo 
+struct ParamInfo
 {
     string name;
     TypeName type;
@@ -67,12 +67,25 @@ class Scope
         if (name in symbols && symbols[name].isConst == true)
             throwChamError(format("%s is a constant literal.", name), value, srcLines);
 
+        Node evaluatedNode;
+
         if (auto fn = cast(FuncCall) value)
         {
-            value = cast(Node) value.eval(this);
+            // Evaluate the function call once and get the resulting Node (or Object convertible to Node)
+            auto res = fn.eval(this);
+
+            // Ideally, you want the return to be a Node, not a raw Object.
+            evaluatedNode = cast(Node) res;
+        }
+        else
+        {
+            evaluatedNode = cast(Node) value.eval(this);
         }
 
-        SymbolInfo info = SymbolInfo(cast(Node) value.eval(this), isConst, type);
+        // Now store the evaluated node and type check
+        SymbolInfo info = SymbolInfo(evaluatedNode, isConst, type);
+        typeCheck(name, info);
+        symbols[name] = info;
 
         // Enforce type correctness on symbol value
         typeCheck(name, info);
@@ -158,7 +171,7 @@ class Scope
     }
 
     /// Looks up the AST node of a symbol by name, searching up through parent scopes
-    Node lookup(string name)
+    Object lookup(string name)
     {
         if (auto val = name in symbols)
             return val.node;
@@ -168,14 +181,19 @@ class Scope
             throw new Exception(format("Undefined symbol: %s", name));
     }
 
-
     /// Looks up the body of a function by name, searching through parent scopes too
-    FunctionInfo lookUpFunction(string name) {
-        if (auto fn = name in functions) {
+    FunctionInfo lookUpFunction(string name)
+    {
+        if (auto fn = name in functions)
+        {
             return *fn;
-        } else if (parent !is null) {
+        }
+        else if (parent !is null)
+        {
             return parent.lookUpFunction(name);
-        } else {
+        }
+        else
+        {
             throwChamError(format("Undefined function being called: %s.", name), null, srcLines);
             assert(0);
         }
@@ -245,15 +263,15 @@ class Scope
     void typeCheck(string name, SymbolInfo info)
     {
         TypeInfo expected = typenames[info.type];
-        if (typeid(info.node.eval(this)) !is expected)
+        if (typeid(info.node) !is expected)
             throwChamError(
                 format("Type mismatch. Expected %s, got %s for symbol `%s`.",
                     expected.toString(),
                     typeid(info.node).toString(),
                     name
             ),
-            info.node,
-            this.srcLines
+            null, // no Node needed
+                this.srcLines
             );
     }
 

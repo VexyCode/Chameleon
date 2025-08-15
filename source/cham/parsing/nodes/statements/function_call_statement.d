@@ -4,8 +4,14 @@ import cham.parsing.nodes.ast_node : Node;
 import cham.lexing.token.token : Token;
 import cham.exceptions.cham_error : throwChamError;
 import cham.parsing.nodes.literals.string_literal : StringLiteral;
+import cham.parsing.nodes.literals.int_literal : IntLiteral;
+import cham.parsing.nodes.literals.float_literal : FloatLiteral;
+import cham.parsing.nodes.literals.bool_literal : BoolLiteral;
+import cham.parsing.nodes.literals.literal : Literal;
 import cham.parsing.nodes.statements.function_def : FuncDef;
 import cham.scopes.scopes : Scope, FunctionInfo, SymbolInfo;
+import cham.parsing.nodes.statements.return_statement : ReturnStmt;
+import cham.variables_and_consts.typenames;
 
 import std.format : format;
 import std.conv : to;
@@ -41,73 +47,95 @@ class FuncCall : Node
 
     override Object eval(Scope _scope)
     {
+        // --- Built-in: log ---
         if (name == "log")
         {
             if (args.length != 1)
-            {
                 throwChamError("Basic NexiLang log function expects exactly one argument", this, _scope
                         .srcLines);
-            }
-            auto val = args[0].eval(_scope);
-            auto s = val.toString().replace("\\n", "\n");
 
-            // super basic, just print whatever .toString() gives
+            auto val = args[0].eval(_scope);
+            string s;
+
+            if (auto lit = cast(StringLiteral) val)
+                s = lit._value.get!string;
+            else if (auto ilit = cast(IntLiteral) val)
+                s = ilit._value.get!string;
+            else if (auto flit = cast(FloatLiteral) val)
+                s = flit._value.get!string;
+            else if (auto blit = cast(BoolLiteral) val)
+                s = blit._value.get!string ? "yes" : "no";
+            else
+                s = val.toString();
+
             import std.stdio : write;
 
+            s = s.replace("\\n", "\n");
             write(s is null ? "<null>" : s);
 
             return null;
         }
-        else if (name == "input")
+
+        // --- Built-in: input ---
+        if (name == "input")
         {
             import std.stdio : readln;
             import std.string : strip;
 
             if (args.length != 0)
-            {
                 throwChamError("Basic NexiLang input function expects exactly no arguments", this, _scope
                         .srcLines);
-            }
-            string val = readln().strip();
 
+            string val = readln().strip();
             return new StringLiteral(val, this.token);
         }
-        else
-        {
-            FunctionInfo fn = _scope.lookUpFunction(name);
 
-            Scope fnScope = _scope.createChild();
+        // --- User-defined function ---
+        FunctionInfo fn = _scope.lookUpFunction(name);
+        Scope fnScope = _scope.createChild();
 
-            if (args.length != fn.params.length)
-            {
-                throwChamError(
-                    format(
-                        "Function %s expected %s arguments, but got %s. There are %s arguments missing.",
-                        name, fn.params.length, args.length, (fn.params.length - args.length)
-                ),
+        // check argument count
+        if (args.length != fn.params.length)
+            throwChamError(
+                format("Function %s expected %s arguments, but got %s.", name, fn.params.length, args
+                    .length),
                 this,
                 _scope.srcLines
-                );
-                assert(0);
-            }
+            );
 
-            foreach (i, param; fn.params)
-            {
-                Object argVal = args[i].eval(_scope);
-                Node argNode = cast(Node) args[i];
-                fnScope.symbols[param.name] = SymbolInfo(argNode, false, param.type);
-            }
-
-            foreach (stmt; fn.body)
-            {
-                auto result = stmt.eval(fnScope);
-                // Return will be added a bit later, just simple functions for now
-            }
-            return null;
+        // evaluate arguments and assign to parameters in child scope
+        foreach (i, param; fn.params)
+        {
+            Object argVal = args[i].eval(_scope); // evaluate in caller scope
+            fnScope.symbols[param.name] = SymbolInfo(argVal, false, param.type);
         }
 
-        throwChamError("Function `" ~ name ~ "` not found", this, _scope.srcLines);
-        assert(0);
+        // execute function body
+        foreach (stmt; fn.body)
+        {
+            auto result = stmt.eval(fnScope);
+
+            if (result !is null)
+            {
+                import cham.parsing.nodes.statements.return_statement : ReturnStmt;
+
+                auto retStmt = cast(ReturnStmt) stmt;
+                if (retStmt !is null)
+                {
+                    return result; // propagate value
+                }
+            }
+        }
+
+        // if function expected a return but none was given
+        if (fn.returns)
+            throwChamError(
+                format("Function %s expected a return value but none was returned", name),
+                this,
+                _scope.srcLines
+            );
+
+        return null;
     }
 
     override string toString() const
@@ -120,7 +148,7 @@ class FuncCall : Node
 }
 
 import std.traits : staticMap;
-import std.meta : AliasSeq; 
+import std.meta : AliasSeq;
 
 template MaxTypeSize(T...)
 {
