@@ -4,6 +4,7 @@ import cham.parsing.nodes.ast_node : Node;
 import cham.parsing.nodes.constants.decl_const;
 import cham.parsing.nodes.variables.decl_var;
 import cham.parsing.nodes.statements.if_statement;
+import cham.parsing.nodes.statements.function_def : FuncDef;
 import cham.scopes.scopes : Scope;
 import std.stdio;
 

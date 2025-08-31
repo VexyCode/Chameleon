@@ -60,6 +60,7 @@ immutable string[string] keywords =
         "true"  : "", 
         "false" : "",
         "define": "",
+        "return": "",
     ];
 
 /// Returns true if the given string (case-sensitive) is a keyword.

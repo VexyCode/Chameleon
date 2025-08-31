@@ -16,6 +16,7 @@ import std.uni : isWhite, isNumber, isAlpha, isAlphaNum;
 import std.algorithm : canFind, all;
 import std.conv;
 import std.stdio;
+import std.format;
 
 /// The Lexer turns a raw input string into a list of Tokens.
 /// This is the first phase of most compilers/interpreters.
@@ -103,6 +104,13 @@ private:
         else if (isOp(cur.to!string())) {
             string opChar = cur.to!string();
             advance();
+            if (isSmallOp(cur)) {
+                opChar ~= cur;
+                advance();
+            }
+            if (!isOp(opChar)) {
+                throwLexerError(format("Unknown operator: ", opChar), Token(line, col - 1, opChar, TT.Op));
+            }
             ret = Token(line, col - 1, opChar, TT.Op);
         }
 

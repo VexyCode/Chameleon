@@ -13,6 +13,8 @@ import std.stdio : writeln;
 import std.algorithm.iteration : map; 
 import std.array : array, join, replace;       
 import std.variant;
+import std.algorithm;
+import std.array;
 
 
 class FuncDef : Node {
@@ -53,6 +55,24 @@ class FuncDef : Node {
     }
 
     override string toString() const {
-        return format("[FunctionDef: %s]", name);
+        auto indentedBody = body
+        .map!(n => indent(n.toString()))
+        .array
+        .join("\n");
+
+        return format("[FunctionDef %s:\n  body:\n%s\n]", name, indentedBody);
     }
+}
+
+string indent(string text, string prefix = "    ") {
+    import std.algorithm.iteration : map;
+    import std.array : join, array;
+    import std.string : split;
+
+    auto lines = split(text, "\n");
+    auto indentedLines = lines
+        .map!(line => prefix ~ line)
+        .array;
+
+    return indentedLines.join("\n");
 }

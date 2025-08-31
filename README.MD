@@ -25,6 +25,15 @@ cd Chameleon
 dub build --build=release
 # Or use --build=debug to get detailed debug info.
 ```
+### Verify the install:
+```nexilang
+./cham --version
+```
+##### Should log something like:
+```
+Chameleon Compiler for NexiLang
+ Version 0.5.0 - Garnet
+```
 
 ### Run NexiLang files (`.nl`):  
 ```bash

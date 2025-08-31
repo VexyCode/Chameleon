@@ -9,16 +9,27 @@ import cham.parsing.nodes.ast_node : Node;
 import cham.interpreting.interpreter : Interpreter;
 import cham.exceptions.cham_error : ChamError;
 import std.string : strip, toLower;
+import cham.builtins : BuiltIns;
 
 void main(string[] args)
 {
     try {
+        const string vrs = "0.5.0";
+        const string code_name = "Garnet";
+
+        BuiltIns.initialize();
+
         // gotta have a filename argument or nah
         if (args.length < 2) {
             throw new Exception("No file provided. Usage: cham <filename>");
         }
 
         string content = "";
+
+        if (args[1] == "--version") {
+            writefln("Chameleon Compiler for NexiLang.\n Version %s - %s", vrs, code_name);
+            return;
+        }
 
         // read file content if exists, else roast user with a bozo message
         if (exists(args[1])) {
@@ -65,7 +76,7 @@ void printNiceError(Exception e) {
     import std.string : strip;
 
     if (auto ce = cast(ChamError) e) {
-        writeln("\x1b[31mNexiLang Error:");
+        writeln("\x1b[31mError:");
         writeln("   -> ", ce.msg.strip());
         writeln("   Line: ", ce.line, ", Column: ", ce.column);
         writeln("   Source: ", ce.sourceLine.strip(), "\x1b[0m");

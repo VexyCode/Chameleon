@@ -16,5 +16,8 @@ class StringLiteral : Literal {
     override Object eval(Scope _scope) {
         return this;
     }
-    
+
+    StringLiteral merge(StringLiteral other) {
+        return new StringLiteral(this.as!string() ~ other.as!string(), this.token);
+    }    
 }

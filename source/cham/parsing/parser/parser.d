@@ -13,6 +13,8 @@ import cham.variables_and_consts.typenames : TypeName, fromString;
 import cham.parsing.nodes.statements.if_statement : IfStmt;
 import cham.parsing.nodes.statements.function_call_statement : FuncCall;
 import cham.parsing.nodes.statements.function_def : FuncDef;
+import cham.parsing.nodes.statements.return_statement : ReturnStmt;
+
 
 // Const / Var declaration & lookup
 import cham.parsing.nodes.constants.decl_const : DeclConst;
@@ -79,9 +81,18 @@ class Parser {
         else if (cur.type == TT.Keyword && cur.lexeme == "define") return parseFuncDef();
         else if (cur.type == TT.Id && peek().type != TT.TypeName && peek(2).type == TT.Op && peek(2).lexeme == "=")
                     return parseVarReDef();
+        else if (cur.type == TT.Keyword && cur.lexeme == "return") return parseReturn();
 
         // Fallback: arithmetic expression
         else return parseComparison();
+    }
+
+    Node parseReturn() {
+        expect(TT.Keyword, "return");
+        advance();
+
+        Node value = parseComparison();
+        return new ReturnStmt(value, cur);
     }
 
     Node parseFuncDef() {
@@ -265,6 +276,7 @@ class Parser {
     }
 
     Node parseComparison() {
+        debug writeln("parsing comp. first token: ", cur);
         Node left = parseAdditive();
 
         while (cur.type == TT.Op && 
@@ -383,7 +395,7 @@ class Parser {
                     return new LookUp(name, cur);
 
                 default:
-                    throwChamError(format("Unknown token type: %s", cur.type), cur);
+                    throwChamError(format("Unexpected token type: %s", cur.type), cur);
             }
         } catch (ConvException e) {
             throwChamError(format("Failed to convert literal '%s' to number: %s", cur.lexeme, e.msg), cur);
