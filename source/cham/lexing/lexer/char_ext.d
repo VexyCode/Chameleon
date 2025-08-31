@@ -61,6 +61,7 @@ immutable string[string] keywords =
         "false" : "",
         "define": "",
         "return": "",
+        "while" : ""
     ];
 
 /// Returns true if the given string (case-sensitive) is a keyword.

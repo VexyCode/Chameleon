@@ -14,7 +14,7 @@ import cham.parsing.nodes.statements.if_statement : IfStmt;
 import cham.parsing.nodes.statements.function_call_statement : FuncCall;
 import cham.parsing.nodes.statements.function_def : FuncDef;
 import cham.parsing.nodes.statements.return_statement : ReturnStmt;
-
+import cham.parsing.nodes.loops.while_loop : WhileLoop;
 
 // Const / Var declaration & lookup
 import cham.parsing.nodes.constants.decl_const : DeclConst;
@@ -82,9 +82,23 @@ class Parser {
         else if (cur.type == TT.Id && peek().type != TT.TypeName && peek(2).type == TT.Op && peek(2).lexeme == "=")
                     return parseVarReDef();
         else if (cur.type == TT.Keyword && cur.lexeme == "return") return parseReturn();
+        else if (cur.type == TT.Keyword && cur.lexeme == "while") return parseWhile();
 
         // Fallback: arithmetic expression
         else return parseComparison();
+    }
+
+    Node parseWhile() {
+        expect(TT.Keyword, "while");
+        advance();
+
+        expect(TT.LParan);
+        advance();
+        Node cond = parseExpr();
+        expect(TT.RParan);
+        advance();
+        Node[] body = parseBlock();
+        return new WhileLoop(body, cond, cur);
     }
 
     Node parseReturn() {

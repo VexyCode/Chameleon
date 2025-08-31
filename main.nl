@@ -1,12 +1,6 @@
-define hi(string who) string run
-    return "Hi, " + who + "!"
+var int i = 0
+
+while (i <= 10) run
+    logln(i)
+    i = i + 1
 end
-
-define logln(string message) string run
-    log(message)
-    log("\n")
-end
-
-var string name = prompt("Enter your name: ", yes)
-logln(hi(name))
-
